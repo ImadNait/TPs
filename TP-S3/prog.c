@@ -10,6 +10,7 @@ Stack Inventory;
 Stack RecentReturned;  
 Queue RequestQ; 
 
+//function to save new books to the inventory file
 void SaveBooksToFile(const char* filename, Stack* library) {
     FILE* file = fopen(filename, "w");
     if (!file) {
