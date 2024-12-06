@@ -6,11 +6,10 @@
 #include "queue.c"
 #include "library.h"
 
-
-
 Stack Inventory; 
 Stack RecentReturned;  
 Queue RequestQ; 
+
 void SaveBooksToFile(const char* filename, Stack* library) {
     FILE* file = fopen(filename, "w");
     if (!file) {
@@ -75,7 +74,7 @@ void UpdateBookAvailabilityInFile(const char* filename, int bookID, bool newAvai
     // Read books from the file and update the target book
     while (fscanf(file, "%d\n", &book.id) == 1) {
         fgets(book.title, sizeof(book.title), file);
-        book.title[strcspn(book.title, "\n")] = '\0';  // Remove trailing newline
+        book.title[strcspn(book.title, "\n")] = '\0';  
         fgets(book.author, sizeof(book.author), file);
         book.author[strcspn(book.author, "\n")] = '\0';  // Remove trailing newline
         fscanf(file, "%d\n", &tempAvailability);
@@ -162,7 +161,7 @@ void ReturnBook(Book book){
     }
     
     Push(&RecentReturned, book);
-    //...files
+
 }
 
 void ProcessRequest(User user){
