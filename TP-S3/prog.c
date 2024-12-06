@@ -39,6 +39,7 @@ void SaveBooksToFile(const char* filename, Stack* library) {
 //function to load books from the inventory file
 void LoadBooksFromFile(const char* filename, Stack* library) {
     FILE* file = fopen(filename, "r");
+    
     if (!file) {
         printf("Error opening file for reading or file not found.\n");
         return;
