@@ -56,7 +56,7 @@ void LoadBooksFromFile(const char* filename, Stack* library) {
 
     fclose(file);
 }
-
+//function to update the book availability in the inventory file
 void UpdateBookAvailabilityInFile(const char* filename, int bookID, bool newAvailability) {
     FILE* file = fopen(filename, "r");
     if (!file) {
@@ -165,6 +165,7 @@ void ReturnBook(Book book){
 
 }
 
+//Process Request function
 void ProcessRequest(User user){
     Book bk;
     Stack G;
