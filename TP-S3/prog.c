@@ -190,6 +190,7 @@ void ProcessRequest(User user){
     
 }
 
+//Display stack function
 void DisplayS(Stack* S){
     Stack R;
     InitStack(&R);
