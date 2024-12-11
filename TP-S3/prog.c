@@ -58,7 +58,7 @@ void LoadBooksFromFile(const char* filename, Stack* library) {
 
     fclose(file);
 }
-//function to update the book availability in the inventory file
+
 void UpdateBookAvailabilityInFile(const char* filename, int bookID, bool newAvailability) {
     FILE* file = fopen(filename, "r");
     if (!file) {
@@ -66,23 +66,23 @@ void UpdateBookAvailabilityInFile(const char* filename, int bookID, bool newAvai
         return;
     }
 
-    // Temporary storage for books
+
     Stack temp;
     InitStack(&temp);
 
     Book book;
     int tempAvailability;
 
-    // Read books from the file and update the target book
+
     while (fscanf(file, "%d\n", &book.id) == 1) {
         fgets(book.title, sizeof(book.title), file);
         book.title[strcspn(book.title, "\n")] = '\0';  
         fgets(book.author, sizeof(book.author), file);
-        book.author[strcspn(book.author, "\n")] = '\0';  // Remove trailing newline
+        book.author[strcspn(book.author, "\n")] = '\0';  
         fscanf(file, "%d\n", &tempAvailability);
         book.available = (bool)tempAvailability;
 
-        // Update the book's availability if the ID matches
+
         if (book.id == bookID) {
             book.available = newAvailability;
         }
