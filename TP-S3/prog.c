@@ -237,19 +237,42 @@ void DisplayQueue(Queue* Q){
 }
 
 void SearchBook(Book book){
-
+    Book temp;
+    Stack T;
+    while(!isSEmpty(Inventory)){
+    Pop(&Inventory, &temp);
+    if(temp.id == book.id || temp.author == book.author || temp.available == book.available || temp.title == book.title){
+    printf("This book is available!");
+    }
+    else{
+    printf("This book is not available!"); 
+    }
+    }
+    Push(&T, temp);
+    while (!isSEmpty(T)){
+    Pop(&T, &temp);
+    Push(&Inventory, temp);
+    }
 }
 
 void welcome(Stack*S, Queue*Q){
-    int choice;
+    int choice, choice1;
     Book book;
     User user;
-    printf("Welcome to the library! Please select one of these options:\n1.Process operations.\n2.View status.\n3.Quit");
+    printf("Welcome to the library! Please select one of these options:\n1\.Process operations.\n2\.View status.\n3\.Quit");
     do{
     scanf("%d",&choice);
     }while (choice!=1&&choice!=2&&choice!=3);
     if(choice==1){
-    
+    printf("Select one of these operations:\n1\.Add a new book to the library.\n2\.Return a book.\n3\.Request to borrow a book.");
+    do{scanf("%d",&choice1);}while(choice1!=1 && choice1!=2 && choice1!=3);
+    if(choice1==1){
+    AddBook(&S, book);
+    }else if(choice1==2){
+    ReturnBook(book);
+    }else if(choice1==3){
+    ProcessRequest(user);
+    }
     printf("Enter your book's details:\n");
     printf("Book's ID:");
     scanf("%d",&book.id);
