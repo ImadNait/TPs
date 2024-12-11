@@ -106,8 +106,6 @@ void UpdateBookAvailabilityInFile(const char* filename, int bookID, bool newAvai
     fclose(file);
 }
 
-
-
 void InitLibrary() {
     InitStack(&Inventory); 
     InitStack(&RecentReturned);  
@@ -220,6 +218,10 @@ void DisplayQueue(Queue* Q){
     User popUser;
     int i=1;
     printf("Current Queue:\n");
+    if(isQEmpty(*Q)){
+        printf("None");
+    }
+    else{
     while(!isQEmpty(*Q)){
         Dequeue(Q, &popUser);
         printf("User %d\n", i);
@@ -231,8 +233,39 @@ void DisplayQueue(Queue* Q){
         Dequeue(&F, &popUser);
         Enqueue(Q, popUser);
     }
+    }
 }
 
+void SearchBook(Book book){
+
+}
+
+void welcome(Stack*S, Queue*Q){
+    int choice;
+    Book book;
+    User user;
+    printf("Welcome to the library! Please select one of these options:\n1.Process operations.\n2.View status.\n3.Quit");
+    do{
+    scanf("%d",&choice);
+    }while (choice!=1&&choice!=2&&choice!=3);
+    if(choice==1){
+    
+    printf("Enter your book's details:\n");
+    printf("Book's ID:");
+    scanf("%d",&book.id);
+    printf("Book's title:");
+    scanf("%s",&book.title);
+    printf("Book's author:");
+    scanf("%s",&book.author);
+    book.available = true;
+    AddBook(&Inventory, book);
+    }else if(choice==2){
+    printf("Enter the book's id");
+    }else if(choice==3){
+        return;
+    }
+    
+}
 
 int main(){
     User user1 = { 5, "Imad", 1};
