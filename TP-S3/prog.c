@@ -5,6 +5,9 @@
 #include "stack.c"
 #include "queue.c"
 #include "library.h"
+#define INVENTORY_FILE "inventory.txt"
+#define REQUEST_QUEUE_FILE "request_queue.txt"
+#define RECENT_RETURNED_FILE "recent_returned.txt"
 
 Stack Inventory; 
 Stack RecentReturned;  
@@ -106,10 +109,111 @@ void UpdateBookAvailabilityInFile(const char* filename, int bookID, bool newAvai
     fclose(file);
 }
 
+// Function to save the request queue to a file
+void SaveRequestQueueToFile(const char* filename, Queue* requestQueue) {
+    FILE* file = fopen(filename, "w");
+    if (!file) {
+        printf("Error opening request queue file for writing.\n");
+        return;
+    }
+
+    Queue tempQueue;
+    InitQueue(&tempQueue);
+    User user;
+
+    while (!isQEmpty(*requestQueue)) {
+        Dequeue(requestQueue, &user);
+        fprintf(file, "%d\n%s\n%d\n\n", user.id, user.name, user.requested_book_id);
+        Enqueue(&tempQueue, user);
+    }
+
+    // Restore the original queue
+    while (!isQEmpty(tempQueue)) {
+        Dequeue(&tempQueue, &user);
+        Enqueue(requestQueue, user);
+    }
+
+    fclose(file);
+}
+
+// Function to load the request queue from a file
+void LoadRequestQueueFromFile(const char* filename, Queue* requestQueue) {
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        printf("Error opening request queue file for reading.\n");
+        return;
+    }
+
+    User user;
+    while (fscanf(file, "%d\n", &user.id) == 1) {
+        fgets(user.name, sizeof(user.name), file);
+        user.name[strcspn(user.name, "\n")] = '\0';
+        fscanf(file, "%d\n", &user.requested_book_id);
+        Enqueue(requestQueue, user);
+    }
+
+    fclose(file);
+}
+
+// Function to save recently returned books to a file
+void SaveRecentReturnedToFile(const char* filename, Stack* recentReturned) {
+    FILE* file = fopen(filename, "w");
+    if (!file) {
+        printf("Error opening recent returned books file for writing.\n");
+        return;
+    }
+
+    Stack tempStack;
+    InitStack(&tempStack);
+    Book book;
+
+    while (!isSEmpty(*recentReturned)) {
+        Pop(recentReturned, &book);
+        fprintf(file, "%d\n%s\n%s\n%d\n\n", book.id, book.title, book.author, (bool)book.available);
+        Push(&tempStack, book);
+    }
+
+    // Restore the original stack
+    while (!isSEmpty(tempStack)) {
+        Pop(&tempStack, &book);
+        Push(recentReturned, book);
+    }
+
+    fclose(file);
+}
+
+// Function to load recently returned books from a file
+void LoadRecentReturnedFromFile(const char* filename, Stack* recentReturned) {
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        printf("Error opening recent returned books file for reading.\n");
+        return;
+    }
+
+    Book book;
+    int temp;
+    while (fscanf(file, "%d\n", &book.id) == 1) {
+        fgets(book.title, sizeof(book.title), file);
+        book.title[strcspn(book.title, "\n")] = '\0';
+        fgets(book.author, sizeof(book.author), file);
+        book.author[strcspn(book.author, "\n")] = '\0';
+        fscanf(file, "%d\n", &temp);
+        book.available = (bool)temp;
+        Push(recentReturned, book);
+    }
+
+    fclose(file);
+}
+
+
 void InitLibrary() {
     InitStack(&Inventory); 
     InitStack(&RecentReturned);  
     InitQueue(&RequestQ); 
+    
+    LoadBooksFromFile("inventory.txt", &Inventory);
+    LoadRecentReturnedFromFile("recent_returned.txt", &RecentReturned);
+    LoadRequestQueueFromFile("request_queue.txt", &RequestQ);
 }
 
 void AddBook(Stack*Library, Book book){
@@ -127,7 +231,8 @@ void BorrowBook(User user ,int ID){
     if(rebook.id == ID && rebook.available==true){
         check=true;
         rebook.available = false;
-        UpdateBookAvailabilityInFile("inverntory.txt", rebook.id, false);
+        UpdateBookAvailabilityInFile("inventory.txt", rebook.id, false);
+        printf("Book has been borrowed successfully!");
     } 
     else{
     Push(&R, rebook);
@@ -137,7 +242,8 @@ void BorrowBook(User user ,int ID){
     Pop(&R, &rebook); 
     Push(&Inventory, rebook);
     }
-    if(check){
+    if(!check){
+        printf("Book not found! u have been added to the request queue.");
         Enqueue(&RequestQ, user);
     }
 
@@ -162,34 +268,88 @@ void ReturnBook(Book book){
     }
     
     Push(&RecentReturned, book);
+    SaveBooksToFile("inventory.txt", &Inventory);
+    SaveRecentReturnedToFile("recent_returned.txt", &RecentReturned);
+    printf("Book returned!");
 
 }
 
 //Process Request function
-void ProcessRequest(User user){
-    Book bk;
-    Stack G;
-    InitStack(&G);
-    while(!isSEmpty(Inventory)){
-    Pop(&Inventory, &bk);
-    if(user.requested_book_id == bk.id){
-        if(bk.available == true){
-            bk.available = false;
-        }else{
-            Enqueue(&RequestQ, user);
+void ProcessRequests() {
+    if (isQEmpty(RequestQ)) {
+        printf("No pending requests in the queue.\n");
+        return;
+    }
+
+    Queue tempQueue;
+    InitQueue(&tempQueue);
+    User currentUser;
+    Book book;
+    bool processedAnyRequest = false;
+
+    while (!isQEmpty(RequestQ)) {
+        Dequeue(&RequestQ, &currentUser);
+        bool bookFound = false;
+        bool bookProcessed = false;
+        Stack tempInventory;
+        InitStack(&tempInventory);
+
+        while (!isSEmpty(Inventory)) {
+            Pop(&Inventory, &book);
+
+ 
+            if (book.id == currentUser.requested_book_id) {
+                bookFound = true;
+
+                if (book.available) {
+                    book.available = false;
+                    UpdateBookAvailabilityInFile(INVENTORY_FILE, book.id, false);
+                    
+                    printf("Book %d borrowed by user %s (ID: %d)\n", 
+                           book.id, currentUser.name, currentUser.id);
+                    processedAnyRequest = true;
+                    bookProcessed = true;
+                } 
+            }
+
+            // Restore book to inventory
+            Push(&tempInventory, book);
+        }
+
+        // Restore inventory
+        while (!isSEmpty(tempInventory)) {
+            Pop(&tempInventory, &book);
+            Push(&Inventory, book);
+        }
+
+        // If book was not processed, put back in queue
+        if (!bookProcessed) {
+            if (!bookFound) {
+                printf("Book %d not found in inventory for user %s\n", 
+                       currentUser.requested_book_id, currentUser.name);
+            } else {
+                Enqueue(&tempQueue, currentUser);
+                printf("Book %d not available. Request for %s remains in queue.\n", 
+                       currentUser.requested_book_id, currentUser.name);
+            }
         }
     }
-    Push(&G, bk);
+
+    // Update the request queue with remaining requests
+    while (!isQEmpty(tempQueue)) {
+        Dequeue(&tempQueue, &currentUser);
+        Enqueue(&RequestQ, currentUser);
     }
-    while(!isSEmpty(G)){
-        Pop(&G, &bk);
-        Push(&Inventory, bk);
+
+    // Save updated queue and inventory
+    if (processedAnyRequest) {
+        SaveRequestQueueToFile(REQUEST_QUEUE_FILE, &RequestQ);
+        SaveBooksToFile(INVENTORY_FILE, &Inventory);
     }
-    
 }
 
 //Display stack function
-void DisplayS(Stack* S){
+void DisplayStack(Stack* S){
     Stack R;
     InitStack(&R);
     Book popBook;
@@ -206,10 +366,6 @@ void DisplayS(Stack* S){
         Pop(&R, &popBook);
         Push(S, popBook);
     }
-}
-
-void DisplayStack(){
-    DisplayS(&RecentReturned);
 }
 
 void DisplayQueue(Queue* Q){
@@ -255,24 +411,37 @@ void SearchBook(Book book){
     }
 }
 
-void welcome(Stack*S, Queue*Q){
+void sortAvailable(Stack*S){
+    Book bk;
+    Stack Temp;
+    Stack avail;
+    while(!isSEmpty(S)){
+    Pop(&S, &bk);
+    if(bk.available==true){
+    Push(&avail, bk);
+    }
+    Push(&Temp, bk);
+    }
+    while(!isSEmpty(Temp)){
+    Pop(&Temp, &bk);
+    Push(&Inventory, bk);
+    }
+    DisplayStack(&avail);
+}
+
+
+void welcome(){
     int choice, choice1;
     Book book;
     User user;
-    printf("Welcome to the library! Please select one of these options:\n1\.Process operations.\n2\.View status.\n3\.Quit");
+    printf("\nWelcome to the library! Please select one of these options:\n1\.Process operations.\n2\.View status.\n3\.Quit\n\nselect:");
     do{
     scanf("%d",&choice);
     }while (choice!=1&&choice!=2&&choice!=3);
     if(choice==1){
-    printf("Select one of these operations:\n1\.Add a new book to the library.\n2\.Return a book.\n3\.Request to borrow a book.");
+    printf("Select one of these operations:\n1\.Add a new book to the library.\n2\.Return a book.\n3\.Request to borrow a book.\nselect:");
     do{scanf("%d",&choice1);}while(choice1!=1 && choice1!=2 && choice1!=3);
     if(choice1==1){
-    AddBook(&S, book);
-    }else if(choice1==2){
-    ReturnBook(book);
-    }else if(choice1==3){
-    ProcessRequest(user);
-    }
     printf("Enter your book's details:\n");
     printf("Book's ID:");
     scanf("%d",&book.id);
@@ -282,8 +451,46 @@ void welcome(Stack*S, Queue*Q){
     scanf("%s",&book.author);
     book.available = true;
     AddBook(&Inventory, book);
+    }else if(choice1==2){
+    printf("Enter your book's details:\n");
+    printf("Book's ID:");
+    scanf("%d",&book.id);
+    printf("Book's title:");
+    scanf("%s",&book.title);
+    printf("Book's author:");
+    scanf("%s",&book.author);
+    book.available = false;
+    ReturnBook(book);
+    }else if(choice1==3){
+    printf("Enter your informations details:\n");
+    printf("Your name:");
+    scanf("%s",&user.name);
+    printf("Your ID:");
+    scanf("%d",&user.id);
+    printf("Your requested book's ID:");
+    scanf("%d",&user.requested_book_id);
+    BorrowBook(user, user.requested_book_id);
+    ProcessRequests();
+    }
     }else if(choice==2){
-    printf("Enter the book's id");
+    printf("Select one of these operations:\n1\.View Library's books.\n2\.Search for a book.\n3\.Show current request queue.\n4\.View recently returned books.\n5\.View available books.\nselect:");
+    do{scanf("%d",&choice1);}while(choice1!=1 && choice1!=2 && choice1!=3);
+    if(choice1==1){
+    DisplayStack(&Inventory);
+    }else if(choice1==2){
+    printf("Enter your book's title:\n");
+    scanf("%s",&book.title);
+    printf("Enter your book's author:\n");
+    scanf("%s",&book.author);
+    SearchBook(book);
+    }else if(choice1==3){
+    DisplayQueue(&RequestQ);
+    }else if(choice1==4){
+    printf("Recently returned books:\n");
+    DisplayStack(&RecentReturned);
+    }else if(choice1==5){
+    sortAvailable(&Inventory);
+    }
     }else if(choice==3){
         return;
     }
@@ -295,12 +502,6 @@ int main(){
     Book book1 = {1, "1984", "George Orwell", true},book2 = {2, "HH", "LEO MESSI", true}, book3 = {4, "GG", "Nigga", false};
     Book book5 = { 8, "Red", "Author", true };
     InitLibrary();
-    Push(&Inventory, book1);  
-    Push(&Inventory, book2);
-    Push(&Inventory, book3);
-    AddBook(&Inventory, book5);
-    ProcessRequest(user1);
-    DisplayS(&Inventory);
-    DisplayQueue(&RequestQ);
+    welcome();
     return 0;
 }
