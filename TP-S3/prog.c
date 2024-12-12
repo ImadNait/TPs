@@ -243,8 +243,10 @@ void BorrowBook(User user ,int ID){
     Push(&Inventory, rebook);
     }
     if(!check){
+        ProcessRequests();
         printf("Book not found! u have been added to the request queue.");
         Enqueue(&RequestQ, user);
+        SaveRequestQueueToFile("request_queue.txt", &RequestQ);
     }
 
 
@@ -271,6 +273,7 @@ void ReturnBook(Book book){
     SaveBooksToFile("inventory.txt", &Inventory);
     SaveRecentReturnedToFile("recent_returned.txt", &RecentReturned);
     printf("Book returned!");
+    ProcessRequests();
 
 }
 
