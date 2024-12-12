@@ -110,27 +110,26 @@ void UpdateBookAvailabilityInFile(const char* filename, int bookID, bool newAvai
 }
 
 // Function to save the request queue to a file
-void SaveRequestQueueToFile(const char* filename, Queue* requestQueue) {
+void SaveRecentToFile(const char* filename, Stack* library) {
     FILE* file = fopen(filename, "w");
     if (!file) {
-        printf("Error opening request queue file for writing.\n");
+        printf("Error opening file for writing.\n");
         return;
     }
 
-    Queue tempQueue;
-    InitQueue(&tempQueue);
-    User user;
+    Stack temp;
+    InitStack(&temp);
+    Book book;
 
-    while (!isQEmpty(*requestQueue)) {
-        Dequeue(requestQueue, &user);
-        fprintf(file, "%d\n%s\n%d\n\n", user.id, user.name, user.requested_book_id);
-        Enqueue(&tempQueue, user);
+    while (!isSEmpty(*library)) {
+        Pop(library, &book);
+        fprintf(file, "%d\n%s\n%s\n%d\n\n", book.id, book.title, book.author, (bool)book.available);  // No change
+        Push(&temp, book);
     }
 
-    // Restore the original queue
-    while (!isQEmpty(tempQueue)) {
-        Dequeue(&tempQueue, &user);
-        Enqueue(requestQueue, user);
+    while (!isSEmpty(temp)) {
+        Pop(&temp, &book);
+        Push(library, book);
     }
 
     fclose(file);
@@ -271,7 +270,7 @@ void ReturnBook(Book book){
     Push(&RecentReturned, book);
     
     printf("\nBook returned!");
-    SaveRecentReturnedToFile("recent_returned.txt", &RecentReturned);
+    SaveRecentToFile("recent_returned.txt", &RecentReturned);
     SaveBooksToFile("inventory.txt", &Inventory);
 
 }
@@ -413,12 +412,12 @@ void SearchBook(Book book){
     }
 }
 
-void sortAvailable(Stack*S){
+void sortAvailable(){
     Book bk;
     Stack Temp;
     Stack avail;
-    while(!isSEmpty(S)){
-    Pop(&S, &bk);
+    while(!isSEmpty(Inventory)){
+    Pop(&Inventory, &bk);
     if(bk.available==true){
     Push(&avail, bk);
     }
@@ -492,6 +491,7 @@ void welcome(){
     LoadRecentReturnedFromFile("recent_returned.txt", &RecentReturned);
     DisplayStack(&RecentReturned);
     }else if(choice1==5){
+    printf("The available books:\n");
     sortAvailable(&Inventory);
     }
     }else if(choice==3){

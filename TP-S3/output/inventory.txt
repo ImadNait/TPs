@@ -1,12 +1,12 @@
-1
-1984
-George Orwell
+60
+Red
+blood
 1
 8
 Red
 Author
 1
-60
-Red
-blood
-0
+1
+1984
+George Orwell
+1
