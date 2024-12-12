@@ -231,8 +231,8 @@ void BorrowBook(User user ,int ID){
     if(rebook.id == ID && rebook.available==true){
         check=true;
         rebook.available = false;
-        UpdateBookAvailabilityInFile("inventory.txt", rebook.id, false);
         printf("Book has been borrowed successfully!");
+        UpdateBookAvailabilityInFile("inventory.txt", rebook.id, false);
     } 
     else{
     Push(&R, rebook);
@@ -243,8 +243,7 @@ void BorrowBook(User user ,int ID){
     Push(&Inventory, rebook);
     }
     if(!check){
-        ProcessRequests();
-        printf("Book not found! u have been added to the request queue.");
+        printf("Book not found!\n u have been added to the request queue.");
         Enqueue(&RequestQ, user);
         SaveRequestQueueToFile("request_queue.txt", &RequestQ);
     }
@@ -270,10 +269,10 @@ void ReturnBook(Book book){
     }
     
     Push(&RecentReturned, book);
-    SaveBooksToFile("inventory.txt", &Inventory);
+    
+    printf("\nBook returned!");
     SaveRecentReturnedToFile("recent_returned.txt", &RecentReturned);
-    printf("Book returned!");
-    ProcessRequests();
+    SaveBooksToFile("inventory.txt", &Inventory);
 
 }
 
@@ -477,7 +476,7 @@ void welcome(){
     }
     }else if(choice==2){
     printf("Select one of these operations:\n1\.View Library's books.\n2\.Search for a book.\n3\.Show current request queue.\n4\.View recently returned books.\n5\.View available books.\nselect:");
-    do{scanf("%d",&choice1);}while(choice1!=1 && choice1!=2 && choice1!=3);
+    do{scanf("%d",&choice1);}while(choice1!=1 && choice1!=2 && choice1!=3 && choice1!=4 && choice1!=5);
     if(choice1==1){
     DisplayStack(&Inventory);
     }else if(choice1==2){
@@ -490,6 +489,7 @@ void welcome(){
     DisplayQueue(&RequestQ);
     }else if(choice1==4){
     printf("Recently returned books:\n");
+    LoadRecentReturnedFromFile("recent_returned.txt", &RecentReturned);
     DisplayStack(&RecentReturned);
     }else if(choice1==5){
     sortAvailable(&Inventory);
@@ -501,9 +501,9 @@ void welcome(){
 }
 
 int main(){
-    User user1 = { 5, "Imad", 1};
-    Book book1 = {1, "1984", "George Orwell", true},book2 = {2, "HH", "LEO MESSI", true}, book3 = {4, "GG", "Nigga", false};
-    Book book5 = { 8, "Red", "Author", true };
+    // User user1 = { 5, "Imad", 1};
+    // Book book1 = {1, "1984", "George Orwell", true},book2 = {2, "HH", "LEO MESSI", true}, book3 = {4, "GG", "Nigga", false};
+    // Book book5 = { 8, "Red", "Author", true };
     InitLibrary();
     welcome();
     return 0;
