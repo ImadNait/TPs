@@ -290,7 +290,6 @@ void AddBook(Stack*Library, Book book){
     SaveBooksToFile("inventory.txt", Library);
     ProcessRequests();
 }
-
 void BorrowBook(User user ,int ID){
     Book rebook;
     Stack R;
