@@ -1,10 +1,10 @@
-60
-Red
-blood
-1
-8
-Red
-Author
+3
+Othello
+William
+0
+69
+KKK
+racist
 1
 1
 1984
