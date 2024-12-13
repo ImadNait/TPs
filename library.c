@@ -322,26 +322,38 @@ void ReturnBook(Book book){
     Book temp;
     Stack T;
     InitStack(&T);
-    while(!isSEmpty(Inventory)){
-    Pop(&Inventory, &temp);
-    if(temp.id == book.id){
-    temp.available = true;
-    UpdateBookAvailabilityInFile("inventory.txt", temp.id, true);
-    }
-    Push(&T, temp);
-    }
-    while (!isSEmpty(T)){
-    Pop(&T, &temp);
-    Push(&Inventory, temp);
-    }
-    
-    Push(&RecentReturned, book);
-    SaveBooksToFile("recent_returned.txt", &RecentReturned);
-    SaveBooksToFile("inventory.txt", &Inventory);
-    printf("\nBook returned!");
-    ProcessRequests();
+    bool found = false;
 
+    while(!isSEmpty(Inventory)){
+        Pop(&Inventory, &temp);
+        if(temp.id == book.id){
+            temp.available = true;
+            found = true;
+            UpdateBookAvailabilityInFile("inventory.txt", temp.id, true);
+            Push(&RecentReturned, temp);  // Push the updated temp, not book
+        }
+        Push(&T, temp);
+    }
+
+    // Restore the inventory stack
+    while (!isSEmpty(T)){
+        Pop(&T, &temp);
+        Push(&Inventory, temp);
+    }
+
+    // Save the inventory after it has been fully restored
+    SaveBooksToFile("inventory.txt", &Inventory);
+    SaveBooksToFile("recent_returned.txt", &RecentReturned);
+
+    if (found) {
+        printf("\nBook returned!");
+    } else {
+        printf("\nBook not found in inventory!");
+    }
+
+    ProcessRequests();
 }
+
 
 
 
