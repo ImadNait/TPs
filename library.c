@@ -382,7 +382,7 @@ void DisplayStack(Stack* S){
     InitStack(&R);
     Book popBook;
     int i=1;
-    printf("Current Books:\n");
+    printf("Recently returned:\n");
     while(!isSEmpty(*S)){
         Pop(S, &popBook);
         printf("Book %d\n", i);
