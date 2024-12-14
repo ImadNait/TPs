@@ -20,7 +20,7 @@ void Push(Stack* S, Book x) {
         printf("Memory allocation failed!\n");
         exit(1);
     }
-    V->Data = x;  // Copy the object into the stack node
+    V->Data = x;  
     V->Next = *S;
     *S = V;
 }
@@ -33,7 +33,7 @@ void Pop(Stack* S, Book* x) {
         return;
     }
     Stack V = *S;
-    *x = V->Data;  // Copy the object out of the stack node
+    *x = V->Data;  
     *S = V->Next;
     free(V);
 }
@@ -51,5 +51,5 @@ Book Top(Stack S) {
         printf("Stack is empty!\n");
         exit(1);
     }
-    return S->Data;  // Return the actual object
+    return S->Data; 
 }
