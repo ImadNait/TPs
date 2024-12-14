@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include "stack.c"
 #include "queue.c"
 #include "library.h"
@@ -150,33 +151,6 @@ void LoadRequestQueueFromFile(const char* filename, Queue* requestQueue) {
         user.name[strcspn(user.name, "\n")] = '\0';
         fscanf(file, "%d\n", &user.requested_book_id);
         Enqueue(requestQueue, user);
-    }
-
-    fclose(file);
-}
-
-// Function to save recently returned books to a file
-void SaveRecentReturnedToFile(const char* filename, Stack* recentReturned) {
-    FILE* file = fopen(filename, "w");
-    if (!file) {
-        printf("Error opening recent returned books file for writing.\n");
-        return;
-    }
-
-    Stack tempStack;
-    InitStack(&tempStack);
-    Book book;
-
-    while (!isSEmpty(*recentReturned)) {
-        Pop(recentReturned, &book);
-        fprintf(file, "%d\n%s\n%s\n%d\n\n", book.id, book.title, book.author, (bool)book.available);
-        Push(&tempStack, book);
-    }
-
-    // Restore the original stack
-    while (!isSEmpty(tempStack)) {
-        Pop(&tempStack, &book);
-        Push(recentReturned, book);
     }
 
     fclose(file);
@@ -494,6 +468,14 @@ void welcome(){
     scanf("%s",book.author);
     book.available = true;
     AddBook(&Inventory, book);
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(8);
+    system("library.exe");
     }else if(choice1==2){
     printf("Enter your book's details:\n");
     printf("Book's ID:");
@@ -504,6 +486,14 @@ void welcome(){
     scanf("%s",book.author);
     book.available = false;
     ReturnBook(book);
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(8);
+    system("library.exe");
     }else if(choice1==3){
     printf("Enter your informations details:\n");
     printf("Your name:");
@@ -514,29 +504,88 @@ void welcome(){
     scanf("%d",&user.requested_book_id);
     BorrowBook(user, user.requested_book_id);
     ProcessRequests();
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(8);
+    system("library.exe");
     }
     }else if(choice==2){
     printf("Select one of these operations:\n1.View Library's books.\n2.Search for a book.\n3.Show current request queue.\n4.View recently returned books.\n5.View available books.\n\nselect:");
     do{scanf("%d",&choice1);}while(choice1!=1 && choice1!=2 && choice1!=3 && choice1!=4 && choice1!=5);
     if(choice1==1){
     DisplayS(&Inventory);
+    sleep(1);
+    printf("\n.");
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(8);
+    system("library.exe");
     }else if(choice1==2){
     printf("Enter your book's title:");
     scanf("%s",book.title);
     printf("Enter your book's author:");
     scanf("%s",book.author);
     SearchBook(book);
+    sleep(1);
+    printf("\n.");
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(8);
+    system("library.exe");
     }else if(choice1==3){
     DisplayQueue(&RequestQ);
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(8);
+    system("library.exe");
     }else if(choice1==4){
     printf("Recently returned books:\n");
     LoadRecentReturnedFromFile("recent_returned.txt", &RecentReturned);
     DisplayStack(&RecentReturned);
+    sleep(1);
+    printf("\n.");
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(8);
+    system("library.exe");
     }else if(choice1==5){
     printf("\nThe available books:\n");
     sortAvailable(&Inventory);
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(1);
+    printf(".");
+    sleep(8);
+    system("library.exe");
     }
     }else if(choice==3){
+        sleep(1);
+        printf("Quitting");
+        sleep(1);
+        printf(".");
+        sleep(1);
+        printf(".");
+        sleep(1);
+        printf(".");
+        sleep(1);
+        printf("\nThanks for coming by :)");
+        sleep(1);
         return;
     }
     
