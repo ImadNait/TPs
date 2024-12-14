@@ -182,7 +182,7 @@ void SaveRecentReturnedToFile(const char* filename, Stack* recentReturned) {
     fclose(file);
 }
 
-// Function to load recently returned books from a file
+// function to load recently returned books from a file
 void LoadRecentReturnedFromFile(const char* filename, Stack* recentReturned) {
     FILE* file = fopen(filename, "r");
     if (!file) {
@@ -205,7 +205,7 @@ void LoadRecentReturnedFromFile(const char* filename, Stack* recentReturned) {
     fclose(file);
 }
 
-
+//initialization of the needed stacks & queue
 void InitLibrary() {
     InitStack(&Inventory); 
     InitStack(&RecentReturned);  
@@ -216,7 +216,7 @@ void InitLibrary() {
     LoadRequestQueueFromFile("request_queue.txt", &RequestQ);
 }
 
-//Process Request function
+//function that process the request queue
 void ProcessRequests() {
     if (isQEmpty(RequestQ)) {
         printf("No pending requests in the queue.\n");
@@ -285,11 +285,14 @@ void ProcessRequests() {
     }
 }
 
+//function to add a new book to the library
 void AddBook(Stack*Library, Book book){
     Push(Library, book);
     SaveBooksToFile("inventory.txt", Library);
     ProcessRequests();
 }
+
+//function to borrow a book from the library
 void BorrowBook(User user ,int ID){
     Book rebook;
     Stack R;
@@ -316,7 +319,7 @@ void BorrowBook(User user ,int ID){
     }
 }
 
-//Rerturn book function
+//function to return back a book
 void ReturnBook(Book book){
     Book temp;
     Stack T;
@@ -329,18 +332,17 @@ void ReturnBook(Book book){
             temp.available = true;
             found = true;
             UpdateBookAvailabilityInFile("inventory.txt", temp.id, true);
-            Push(&RecentReturned, temp);  // Push the updated temp, not book
+            Push(&RecentReturned, temp);  
         }
         Push(&T, temp);
     }
 
-    // Restore the inventory stack
+
     while (!isSEmpty(T)){
         Pop(&T, &temp);
         Push(&Inventory, temp);
     }
 
-    // Save the inventory after it has been fully restored
     SaveBooksToFile("inventory.txt", &Inventory);
     SaveBooksToFile("recent_returned.txt", &RecentReturned);
 
@@ -354,9 +356,7 @@ void ReturnBook(Book book){
 }
 
 
-
-
-//Display stack function
+//function to display a stack
 void DisplayS(Stack* S){
     Stack R;
     InitStack(&R);
@@ -375,13 +375,17 @@ void DisplayS(Stack* S){
         Push(S, popBook);
     }
 }
+
 //function that displays "the recent returned" stack
 void DisplayStack(Stack* S){
     Stack R;
     InitStack(&R);
     Book popBook;
     int i=1;
-    printf("Recently returned:\n");
+    if(isSEmpty(*S)){
+    printf("None");
+    }
+    else{
     while(!isSEmpty(*S)){
         Pop(S, &popBook);
         printf("Book %d\n", i);
@@ -393,8 +397,10 @@ void DisplayStack(Stack* S){
         Pop(&R, &popBook);
         Push(S, popBook);
     }
+    }
 }
 
+//function to display the users request queue
 void DisplayQueue(Queue* Q){
     Queue F;
     InitQueue(&F);
@@ -419,6 +425,7 @@ void DisplayQueue(Queue* Q){
     }
 }
 
+//function to search for a book
 void SearchBook(Book book) {
     Book temp;
     Stack T;
